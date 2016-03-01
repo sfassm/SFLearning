@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_ID" version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+	<display-name>SFSSOTestLib0</display-name>
+	<welcome-file-list>
+		<welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+	
+	<!-- SF: Enforce Liberty OpenID Connect (OIDC) client feature buildpack usage: 
+Basically, this defines security constraints and required roles for application resources. 
+This file basically says that access to index.jsp requires the user to be authenticated with the "any-authenticated" role which is mapped
+to a special subject defined by Liberty called "ALL_AUTHENTICATED_USER" that enforces that ONLY authenticated users have access -->
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>SFSSOTest0EAR</web-resource-name>
+			<url-pattern>/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>any-authenticated</role-name>
+		</auth-constraint>
+	</security-constraint>	
+</web-app>

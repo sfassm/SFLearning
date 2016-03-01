@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application-bnd
+	xmlns="http://websphere.ibm.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://websphere.ibm.com/xml/ns/javaee http://websphere.ibm.com/xml/ns/javaee/ibm-application-bnd_1_2.xsd"
+	version="1.2">
+	<!-- SF: The authorization service determines what objects the required role is mapped to defined in the "ibm-application-bnd.xmi" 
+	file or the "ibm-application-bnd.xml" file, and the "application-bnd" element of the server.xml file. Mappings from these two 
+	sources are merged. If the same role is present in both sources, only the role mapping in the server.xml file is used. -->
+	<security-role name="any-authenticated">
+		<special-subject type="ALL_AUTHENTICATED_USERS" />
+	</security-role>
+</application-bnd>
