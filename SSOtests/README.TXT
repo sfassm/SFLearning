@@ -1,0 +1,1 @@
+ folder contains projects for SSO related tests and samples
