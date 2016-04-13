@@ -1,6 +1,6 @@
   BLUEMIX Web App using own OAuth client implementation for IBM SSO and with JSP:
 ====================================================================================
-  last edited 20160301
+  last edited 20160413
   (project is based on SFSSOStandAloneTest project)
   
 - Bluemix Project contains examples for 
@@ -10,16 +10,16 @@
   * Works with SFTestSingleSignOn (Google account = kelte6811@gmail.com) in Bluemix ORG=SFASSM, space=dev
 
 
- A) Create a simple dynamic Web App, e.g. SFSSOStandAloneTest
+ A) Create a simple dynamic Web App, e.g. SFSSOGetUserInfo
 --------------------------------------------------------------
 - New | Dynamic Web Project : provide a name, e.g. SFSSOGetUserInfoObject (NO EAR file) + CREATE web.xml
 - Set Project properties | Project Facets | 
 - Create new Servlet in src folder: New | Servlet : provide a name, e.g. SFSSOTestServlet (note the given context root, e.g. /SFSSOTestServlet)
 - Edit doGet() to return something: response.getOutputStream().println("Hello World at " + (new Date()).toString());
 - Test it: Run As | Run on Server and select your WAS Liberty Profile
-  Browse to http://localhost:9080/SFSSOStandAloneTest/SFSSOTestServlet 
+  Browse to http://localhost:9080/SFSSOGetUserInfo/SFSSOTestServlet 
 - Deploy and test it on Bluemix: 
-Note: URI root will change to SFSSOStandAloneTest.mybluemix.net/SFSSOTestServlet  
+Note: URI root will change to SFSSOGetUserInfo.mybluemix.net/SFSSOTestServlet  
 - NOTE for LOCAL deployment: WEB App registration in server.xml is automatically done by 
    <webApplication id="SFSSOTestLib0" location="SFSSOTestLib0.war" name="SFSSOTestLib0"/>
 - Make sure that the Project Properties | Project Facets | Runtimes = WAS Liberty Runtime is selected.
@@ -28,6 +28,11 @@ Note: URI root will change to SFSSOStandAloneTest.mybluemix.net/SFSSOTestServlet
 		 			Properties lConnectionProps = new Properties();
 		 			lConnectionProps.load(lFis);
 		 			lFis.close();  
+
+
+
+
+ALTERNATIVE PATH for using OpenId Client in Liberty:
 
 B) Enable Liberty Authentication: Edit web.xml 
 -----------------------------------------------

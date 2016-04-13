@@ -11,11 +11,11 @@
 <!-- SF: Add your JSP Body for creating HTML output content here. Also,
 		add input FORM(s) 
 		NOTE: POST action URI is different for local Liberty test server and in Bluemix:
-		Local:   <FORM method="POST" action="/SFSSOStandAloneTest/SFSSOTestServlet">
+		Local:   <FORM method="POST" action="/SFSSOGetUserInfo/SFSSOGetUserInfoServlet">
 		Bluemix: <FORM method="POST" action="/SFSSOTestServlet">
 		-->
 <h3>Show all information about the linked Bluemix services (VCAP_SERVICES):</h3>
-	<!-- local: /SFSSOStandAloneTest/bluemixenv, Bluemix: /bluemixenv -->
+	<!-- local: /SFSSOGetUserInfo/bluemixenv, Bluemix: /bluemixenv -->
 	<FORM method="POST" action="/bluemixenv">
 		<input type="submit" name="SubmitBtnAction" value="Show VCAP_SERVICE"/>
 	</FORM>	
@@ -23,7 +23,7 @@
 	<br>
 <div>
 <h3>SIGN IN using the configured SSO Service.</h3>
-<!-- local: /SFSSOStandAloneTest/login, Bluemix: /login -->
+<!-- local: /SFSSOGetUserInfo/login, Bluemix: /login -->
 	<FORM method="POST" action="/login">
 		As a result, the user information object content returned by the selected Authentication Provider will be displayed. <br>
 		<input type="submit" name="SubmitBtnAction" value="Login using BMSSO"/>

@@ -15,9 +15,9 @@ import javax.servlet.http.HttpServletResponse;
  * 
  * @author stefan
  * 
- * last edited: 20160108
+ * last edited: 20160413
  */
-@WebServlet("/SFSSOTestServlet")
+@WebServlet({ "/SFSSOGetUserInfoServlet", "/SFSSOTestServlet" })
 public class SFSSOTestServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static boolean is_server_running_locally = true;
