@@ -1,7 +1,7 @@
-  BLUEMIX Web App using own OAuth client implementation for IBM SSO and with JSP:
-====================================================================================
-  last edited 20160502
-  (project is based on SFSSOStandAloneTest project)
+  BLUEMIX Web App using own OAuth client implementation for IBM BlueID (IDaaS v2) and with JSP:
+================================================================================================
+  last edited 20160728
+  (project is based on SFSSOGetUserInfoObject project)
   
 - Bluemix Project contains examples for 
   * using Bluemix Liberty Web application
@@ -10,10 +10,10 @@
   * Works with SFTestSingleSignOn (Google account = kelte6811@gmail.com) in Bluemix ORG=SFASSM, space=dev
 
 
- A) Create a simple dynamic Web App, e.g. SFSSOGetUserInfo
+ A) Create a simple dynamic Web App, e.g. SFBlueIDGetUserInfo
 --------------------------------------------------------------
-- New | Dynamic Web Project : provide a name, e.g. SFSSOGetUserInfoObject (NO EAR file) + CREATE web.xml
-- Set Project properties | Project Facets | 
+- New | Dynamic Web Project : provide a name, e.g. SFBlueIDGetUserInfo (NO EAR file) + CREATE web.xml
+- Set Project properties | Project Facets: Dynamic Web Modul v3.1, Java 1.8, Javascript; Runtime = SFASSM at Bluemix
 - Create new Servlet in src folder: New | Servlet : provide a name, e.g. SFSSOTestServlet (note the given context root, e.g. /SFSSOTestServlet)
 - Edit doGet() to return something: response.getOutputStream().println("Hello World at " + (new Date()).toString());
 - Test it: Run As | Run on Server and select your WAS Liberty Profile
