@@ -7,8 +7,14 @@
   * using Bluemix Liberty Web application
   * using own OpenID Connect Client implementation for Authentication enforcement with IBM Single Sign On Bluemix service
   (rather then the in Liberty integrated OpenID Connect Client - see SFSSOTestLib0)
-  * Works with SFTestSingleSignOn (Google account = kelte6811@gmail.com) in Bluemix ORG=SFASSM, space=dev
+  * Works with IOTPTESTSSO BMSSO instance (Google account = kelte6811@gmail.com) in Bluemix ORG=pvcdemo@de.ibm.com, space=IoT_Tests
+  (deployed as https://SFGetUserInfoObjectFromBMSSO.mybluemix.net)
 
+NOTE for execution:
+- index.jsp must be configured to be used when executed in local WAS profile (http://localhost:9080/SFSSOGetUserInfoObject/index.jsp) OR
+used when executed in Bluemix (http://sfblueidgetuserinfo.mybluemix.net/ or http://SFGetUserInfoObjectFromBMSSO.mybluemix.net/)
+- Configure Return-to-URL in IBMSSO or BlueID service to (see SFSSOAuthenticationEndpointServlet.java)
+https://SFGetUserInfoObjectFromBMSSO.mybluemix.net:443/authfinal
 
  A) Create a simple dynamic Web App, e.g. SFSSOGetUserInfo
 --------------------------------------------------------------
