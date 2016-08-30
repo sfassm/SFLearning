@@ -5,7 +5,7 @@ package com.ibm.labsvcbb.blueid.probing.config;
  * 
  * @author stefan
  * 
- * last edited: 20160114
+ * last edited: 20160830
  */
 import java.io.IOException;
 import java.io.Writer;
@@ -17,13 +17,17 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ibm.json.java.JSONObject;
+
+
 @WebServlet({ "/BlueIDConfigServlet", "/blueidenv" })
 public class BlueIDEnvConfigServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private static SFBlueIDServiceConfig blueIdSvcConfig;		// holds the BlueID configuration object
-	private static boolean is_server_running_locally = true; 	// determines whether App runs in local dev env or in Bluemix
+	private static SFBlueIDServiceConfig blueIdSvcConfig;	// holds the BlueID configuration object
+	private static boolean use_config_props_file = true; 	// determines whether to (re-)load config from properties file
+															// (e.g. when App runs in local dev env instead of Bluemix)
 	
-	private static final String DEBUG_MSG_PREFIX = "SF-DEBUG: ";
+	private static final String DEBUG_MSG_PREFIX = "SF-DEBUG: BlueIDEnvConfigServlet:  ";
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -67,23 +71,34 @@ public class BlueIDEnvConfigServlet extends HttpServlet {
 	protected void computeHttpResponseFromSFBlueIDConfig(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		blueIdSvcConfig = new SFBlueIDServiceConfig();	
 		
-   	 	// 1. Determine whether Servlet runs in local dev env or in cloud
+   	 	// 1. Determine whether to use existing configuration or configuration from config.properties (e.g. when Servlet runs in local dev env
+		// and not in Bluemix) or whether usage of VCAP data (if Auth Service is bound as Bluemix Service) for configuration is desired
 		String server_info = request.getServerName().toLowerCase();
-		
-// SF-TODO: Running locally only for now:
-		if ( server_info.contains("localhost".toLowerCase()) || server_info.startsWith("192.168.") || server_info.startsWith("127.0.")  ) {
-			is_server_running_locally = true;
+		if ( (request.getParameter("postUsedConfig") != null) && 
+				(request.getParameter("postUsedConfig").compareToIgnoreCase("vcapinfo") == 0) ) {
+			blueIdSvcConfig.setBlueidsvc_usevcapinfo(true);
 		} else {
-			is_server_running_locally = true;
+			blueIdSvcConfig.setBlueidsvc_usevcapinfo(false);
+		} 
+		System.out.println(DEBUG_MSG_PREFIX+ "use vcapinfo is set to = " + blueIdSvcConfig.getBlueidsvc_usevcapinfo());
+
+		if ( server_info.contains("localhost".toLowerCase()) || server_info.startsWith("192.168.") 
+				|| server_info.startsWith("127.0.")  || (blueIdSvcConfig.getBlueidsvc_usevcapinfo()==false) ) {
+			use_config_props_file = true;
+		} else {
+			use_config_props_file = false;
 		}
+		System.out.println(DEBUG_MSG_PREFIX+ "use_config_props_file = " + use_config_props_file);
 		
 		
 		// 2. running in Bluemix - get config from VCAP_SERVICEs
-		System.out.println(DEBUG_MSG_PREFIX+ "Retrieving BlueID service configuration from configuration file = " + is_server_running_locally);
-		blueIdSvcConfig.load(is_server_running_locally);
+		System.out.println(DEBUG_MSG_PREFIX+ "Retrieving BlueID service configuration from configuration file? " + use_config_props_file);
+		blueIdSvcConfig.load(use_config_props_file);
 		
 		// 3. Overwrite configuration if provided in POST request and not set to "default":
-		updateAuthServiceConfiguration(request);
+		if ( !(blueIdSvcConfig.getBlueidsvc_usevcapinfo()) ) {
+			updateAuthServiceConfiguration(request);
+		}
 		
 		// 4. Display given configuration
 		Writer out = response.getWriter();
@@ -95,9 +110,9 @@ public class BlueIDEnvConfigServlet extends HttpServlet {
 			
 			out.write("Servlet \'" + request.getServletPath() + "\' received GET request at " + (new Date()).toString());
 			
-			if (is_server_running_locally) {
+			if (use_config_props_file) {
 				out.write("" 
-						+ "<H3>" + "BlueID Config From Local Config" + "</H3>");
+						+ "<H3>" + "Authentication Provider Config From Local Config" + "</H3>");
 				out.write("<body>" 
 						+ "Service name:\t" + blueIdSvcConfig.getBlueidsvc_name());
 				out.write("<br>\n" + "Service label:\t" + blueIdSvcConfig.getBlueidsvc_label());
@@ -112,38 +127,30 @@ public class BlueIDEnvConfigServlet extends HttpServlet {
 				+ ", redirectUri = " + blueIdSvcConfig.getBlueidsvc_redirectUri()
 						);
 			} else {
-				out.write("" 
-				+ "<H3>" + "Config NOT available" + "</H3>");
-				out.write("<body>" 
-				+ "Make sure configuration file contains correct configuration.<br>");				
-			}
-				
+				JSONObject vcapinfo = BluemixEnvConfiguration.getServicesVcaps();
+				if (vcapinfo != null) {
+					out.write("" 
+					+ "<H3>" + "Authentication (BMSSO) Config From Bound VCAP_SERVICES" + "</H3>");
+					out.write("<body>" 
+					+ "The following services are bound:\n\t<br>" + vcapinfo.toString());
+					out.write("<br>\n<br>" 
+					+ "First service of type/label=\"SingleSignOn\":   " 
+					+ BluemixEnvConfiguration.getBMServiceVcapParameterByValue("SingleSignOn", null, "name") );
+					out.write("</body>");		
+					out.write("<br>" 
+					+ "<H3>" + "Bound VCAP_APPLICATION" + "</H3>");
+					out.write("<body>" 
+					+ "The following application infos are available:<br>" + BluemixEnvConfiguration.getApplicationVcap().toString());
 			
-// SF-TODO: Add Bluemix env config if available:
-//			else {
-//				JSONObject vcapinfo = BluemixEnvConfiguration.getServicesVcaps();
-//				if (vcapinfo != null) {
-//					out.write("" 
-//					+ "<H3>" + "SSO Config From Bound VCAP_SERVICES" + "</H3>");
-//					out.write("<body>" 
-//					+ "The following services are bound:\n\t<br>" + vcapinfo.toString());
-//					out.write("<br>\n<br>" 
-//					+ "First service of type/label=\"SingleSignOn\":   " 
-//					+ BluemixEnvConfiguration.getBMServiceVcapParameterByValue("SingleSignOn", null, "name") );
-//					out.write("</body>");		
-//					out.write("<br>" 
-//					+ "<H3>" + "Bound VCAP_APPLICATION" + "</H3>");
-//					out.write("<body>" 
-//					+ "The following application infos are available:<br>" + BluemixEnvConfiguration.getApplicationVcap().toString());
-//			
-//				} else {
-//					out.write("" 
-//							+ "<H3>" + "SSO Config From Bound VCAP_SERVICES" + "</H3>");
-//					out.write("<body>" 
-//							+ "No VCAP_SERVICE info available, Service not bound?!<br>");
-//
-//				}
-//			}
+				} else {
+					out.write("" 
+							+ "<H3>" + "Authentication Service Config From Bound VCAP_SERVICES" + "</H3>");
+					out.write("<body>" 
+							+ "No VCAP_SERVICE info available, Service not bound?! <br>"
+							+ "Please bind an Authentication Service to this Application or select another configuration option!");
+
+				}
+			}
 			
 			out.write("</body>");
 		}
@@ -160,6 +167,11 @@ public class BlueIDEnvConfigServlet extends HttpServlet {
 	 * with it
 	 */
 	void updateAuthServiceConfiguration(HttpServletRequest request) {
+
+		if ( (request.getParameter("postServiceName") != null) && !(request.getParameter("postServiceName").isEmpty()) 
+				&& !(request.getParameter("postServiceName").equalsIgnoreCase("default")) ) {
+			blueIdSvcConfig.setBlueidsvc_name(request.getParameter("postServiceName"));
+		}
 		if ( (request.getParameter("postServiceLabel") != null) && !(request.getParameter("postServiceLabel").isEmpty()) 
 				&& !(request.getParameter("postServiceLabel").equalsIgnoreCase("default")) ) {
 			blueIdSvcConfig.setBlueidsvc_label(request.getParameter("postServiceLabel"));
@@ -192,9 +204,9 @@ public class BlueIDEnvConfigServlet extends HttpServlet {
 				&& !(request.getParameter("postAuthRedirectUri").equalsIgnoreCase("default")) ) {
 			blueIdSvcConfig.setBlueidsvc_redirectUri(request.getParameter("postAuthRedirectUri"));
 		}
-		
-		// update configuration file with the new configuration:
-		blueIdSvcConfig.updateConfigurationFile();
+		System.out.println(DEBUG_MSG_PREFIX+ "Updating configuration with custom values.");
+		// SF-TODO: update configuration file with the new configuration:
+		// blueIdSvcConfig.updateConfigurationFile();
 	}
 
 }

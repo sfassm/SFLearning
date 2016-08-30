@@ -6,7 +6,7 @@
  * 
  * @author stefan
  * 
- * last edited: Jul 28, 2016
+ * last edited: Aug 30, 2016
  */
 package com.ibm.labsvcbb.blueid.probing.config;
 
@@ -23,6 +23,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.ibm.json.java.JSONObject;
+
 public class SFBlueIDServiceConfig {
 	Properties lConnectionProps;
 	// IBM BlueID / IDaaS v2 Service config parameters:
@@ -33,15 +35,15 @@ public class SFBlueIDServiceConfig {
 		//		    + "{ \"issuerIdentifier\": \"sftestssosvc-xu7gl6565y-cn14.iam.ibmcloud.com\"}"
 		//		    + "{    \"clientId\": \"DfyH4w1hSx\"}"
 		//		    + "{    \"serverSupportedScope\":\"openid\" }";	
-	private static String blueidsvc_name = "SFDefaultSingleSignOn";
+	private static String blueidsvc_name = "IOTPTESTBMSSO2";
 	private static String blueidsvc_label = "SingleSignOn";
 	private static String blueidsvc_plan = "standard";
-	private static String blueidsvc_cred_clientId = "DfyH4w1hSx";
-	private static String blueidsvc_cred_serverSupportedScope = "[openid]";
-	private static String blueidsvc_cred_secret = "iOJIfIcIdH";
-	private static String blueidsvc_cred_issuerIdentifier = "sftestssosvc-xu7gl6565y-cn14.iam.ibmcloud.com";
-	private static String blueidsvc_cred_tokenEndpointUrl = "https://sftestssosvc-xu7gl6565y-cn14.iam.ibmcloud.com/idaas/oidc/endpoint/default/token";
-	private static String blueidsvc_cred_authorizationEndpointUrl = "https://sftestssosvc-xu7gl6565y-cn14.iam.ibmcloud.com/idaas/oidc/endpoint/default/authorize";
+	private static String blueidsvc_cred_clientId = "Hp1YpQC6LL";
+	private static String blueidsvc_cred_serverSupportedScope = "openid";
+	private static String blueidsvc_cred_secret = "cwllsHLZDe";
+	private static String blueidsvc_cred_issuerIdentifier = "iotptestbmsso2-tc1sc6bc8z-co15.iam.ibmcloud.com";
+	private static String blueidsvc_cred_tokenEndpointUrl = "https://iotptestbmsso2-tc1sc6bc8z-co15.iam.ibmcloud.com/idaas/oidc/endpoint/default/token";
+	private static String blueidsvc_cred_authorizationEndpointUrl = "https://iotptestbmsso2-tc1sc6bc8z-co15.iam.ibmcloud.com/idaas/oidc/endpoint/default/authorize";
 	private static String blueidsvc_redirectUri = "https://SFBlueIDGetUserInfo.mybluemix.net/BlueIDAuthenticationEndpointServlet";
 	
 	private static Logger lLogger;
@@ -49,23 +51,38 @@ public class SFBlueIDServiceConfig {
 
     // Using local configuration file when executed in local environment, using Bluemix VCAP info when running in 
 	// Bluemix bound to IBM BlueID Service instance:
+	private static boolean usevcapinfo = false;						// Set this to true if VCAP infos should be used for configuration instead of config.properties
     private static String config_file_name = "config.properties";	// PLACE it in /src folder !
-    private static final String DEBUG_PREFIX = "SF-DEBUG: ";
+    private static final String DEBUG_PREFIX = "SF-DEBUG: SFBlueIDServiceConfig: ";
 
     
-    public void load(boolean use_local_config) {
+    /**
+     * Load configuration from given properties file if use_config_props_file is set to true
+     * @param use_local_config
+     */
+    public void load(boolean use_config_props_file) {
    	 lLogger = Logger.getLogger("SFBlueIDAccessConfig");
 		
-   	 if (use_local_config) {
-   		 lLogger.info(DEBUG_PREFIX + "Running in local dev env, using configuration file = " + config_file_name);
+   	 if (use_config_props_file) {
+   		 // Load configuration from config.properties file
+   		 lLogger.info(DEBUG_PREFIX + "Reloading configuration from file = " + config_file_name);
    		 loadPropertiesFromFile(config_file_name);
    	 } else {
-   		 lLogger.info(DEBUG_PREFIX+"Running in Bluemix, using VCAP config");
-   		 // SF-TODO: loadPropertiesFromBluemixVcap();
+   		 if(usevcapinfo) {
+   			 // User requested to use VCAP parameters for configuration
+   			 lLogger.info(DEBUG_PREFIX+"Running in Bluemix, loading config from VCAP info.");
+   			 loadPropertiesFromBluemixVcap();
+   		 } else {
+   			 // use default or already set values
+   			 lLogger.info(DEBUG_PREFIX+"Using existing configuration.");
+   		 }
    	 }
     }
       
     //// GETTERS and SETTERS ////
+    public static Boolean getBlueidsvc_usevcapinfo() { return usevcapinfo; }
+    public static void setBlueidsvc_usevcapinfo(boolean use_vcap_infos) {	SFBlueIDServiceConfig.usevcapinfo = use_vcap_infos;}
+    
 	/**
 	 * @return the blueidsvc_name
 	 */
@@ -190,7 +207,38 @@ public class SFBlueIDServiceConfig {
     
     
     /// INTERNAL HELPERS ////
-    
+	private void loadPropertiesFromBluemixVcap() {
+		try {
+			JSONObject vcapServiceInfos = BluemixEnvConfiguration.getServicesVcaps();
+			if (vcapServiceInfos != null) {
+				blueidsvc_name = BluemixEnvConfiguration.getBMServiceVcapParameterByValue("SingleSignOn", null, "name").toString();
+				blueidsvc_label = BluemixEnvConfiguration.getBMServiceVcapParameterByValue("SingleSignOn", null, "label").toString();
+				blueidsvc_plan = BluemixEnvConfiguration.getBMServiceVcapParameterByValue("SingleSignOn", null, "plan").toString();
+				// String[] blueidsvc_credentials = (String[]) BluemixEnvConfiguration.getBMServiceVcapParameterByValue("SingleSignOn", null, "credentials");
+				blueidsvc_cred_clientId = BluemixEnvConfiguration.getBMServiceVcapParameterByValue("SingleSignOn", null, "credentials.clientId").toString();
+				blueidsvc_cred_secret =  BluemixEnvConfiguration.getBMServiceVcapParameterByValue("SingleSignOn", null, "credentials.secret").toString();
+				blueidsvc_cred_serverSupportedScope = BluemixEnvConfiguration.getBMServiceVcapParameterByValue("SingleSignOn", null, "credentials.serverSupportedScope").toString();
+	lLogger.info(DEBUG_PREFIX + "CONFIG FILE parsing, found Scopes = " + blueidsvc_cred_serverSupportedScope + " for service name = " + blueidsvc_name);	
+		        Pattern seperators = Pattern.compile(".*\\[ *(.*) *\\].*");
+		        if (seperators != null) {
+		        	Matcher scopeMatcher = seperators.matcher(blueidsvc_cred_serverSupportedScope);
+			        scopeMatcher.find();
+			        blueidsvc_cred_serverSupportedScope = scopeMatcher.group(1); // only get the first occurrence
+			 lLogger.info(DEBUG_PREFIX + "VCAP_SERVICE config parsing, retrieved first Scope = " + blueidsvc_cred_serverSupportedScope);
+		        }				blueidsvc_cred_issuerIdentifier = BluemixEnvConfiguration.getBMServiceVcapParameterByValue("SingleSignOn", null, "credentials.issuerIdentifier").toString();
+				blueidsvc_cred_authorizationEndpointUrl = BluemixEnvConfiguration.getBMServiceVcapParameterByValue("SingleSignOn", null, "credentials.authorizationEndpointUrl").toString();
+				blueidsvc_cred_tokenEndpointUrl = BluemixEnvConfiguration.getBMServiceVcapParameterByValue("SingleSignOn", null, "credentials.tokenEndpointUrl").toString();
+
+				lLogger.info(DEBUG_PREFIX + "VCAP_SERVICE found for service name = " + blueidsvc_name);
+			} else {
+				lLogger.severe(DEBUG_PREFIX + "VCAP_SERVICE and/or VCAP_APPLICATION information not accessible! Using default connection settings.");				
+			}
+		} catch (IOException e) {
+			lLogger.severe(DEBUG_PREFIX + "VCAP_SERVICE and/or VCAP_APPLICATION information not accessible! Using default connection settings.");
+			e.printStackTrace();
+		}
+ 	}
+ 	   
 	
     /**
 	 * Method to load GIVEN settings from configuration file
@@ -255,8 +303,8 @@ public class SFBlueIDServiceConfig {
 	}		
 
 	/**
-	 * updateConfigurationFile - updates configuration/properties file new configuration values
-	 * SF: NOT WORKING !!!
+	 * updateConfigurationFile - updates configuration/properties
+	 * Updating the properties file with new configuration values is not available
 	 */
 	public void updateConfigurationFile() {
 		// update the properties object with the new configuration
@@ -271,19 +319,18 @@ public class SFBlueIDServiceConfig {
 		lConnectionProps.setProperty("BlueIDServiceCredentials_authorizationEndpointUrl", blueidsvc_cred_authorizationEndpointUrl);
 		lConnectionProps.setProperty("BlueIDServiceCredentials_redirectUri", blueidsvc_redirectUri);
 		
-		// update configuration file with the new configuration:
-		
-		try {
-			OutputStream configFileOut = new FileOutputStream(config_file_name);
-	        lConnectionProps.store(configFileOut, "Updated by User request in BlueIDEnvConfigServlet");
-	        lLogger.severe(DEBUG_PREFIX + "Configuration was updated by user with new settings.");
-	        configFileOut.close();
-		} catch (FileNotFoundException e) {
-			lLogger.severe(DEBUG_PREFIX + "Configuration file = " + config_file_name + " for updating parameter values could not be found.");
-			e.printStackTrace();
-		} catch (IOException e) {
-			lLogger.severe(DEBUG_PREFIX + "Configuration file = " + config_file_name + " could not be stored with updated settings.");
-			e.printStackTrace();
-		} 
+		// SF-TODO: update configuration file with the new configuration:		
+//		try {
+//			OutputStream configFileOut = new FileOutputStream(config_file_name);
+//	        lConnectionProps.store(configFileOut, "Updated by User request in BlueIDEnvConfigServlet");
+//	        lLogger.severe(DEBUG_PREFIX + "Configuration was updated by user with new settings.");
+//	        configFileOut.close();
+//		} catch (FileNotFoundException e) {
+//			lLogger.severe(DEBUG_PREFIX + "Configuration file = " + config_file_name + " for updating parameter values could not be found.");
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			lLogger.severe(DEBUG_PREFIX + "Configuration file = " + config_file_name + " could not be stored with updated settings.");
+//			e.printStackTrace();
+//		} 
 	}
 }
