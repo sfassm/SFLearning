@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 
-import javax.json.JsonString;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -31,7 +30,7 @@ import com.ibm.labsvcbb.blueid.probing.config.SFBlueIDServiceConfig;
 @WebServlet({ "/BlueIDAuthenticationEndpointServlet", "/authenticationredirecturltarget", "/authfinal" })
 public class BlueIDAuthenticationEndpointServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private static SFBlueIDServiceConfig blueidSvcConfig;				// holds the SSO configuration object
+	private static SFBlueIDServiceConfig blueidSvcConfig;		// holds the BlueID configuration object
 	private static boolean is_server_running_locally = true; 	// determines whether App runs in local dev env or in Bluemix
 	
 	private static final String DEBUG_MSG_PREFIX = "SF-DEBUG: ";
@@ -49,7 +48,7 @@ public class BlueIDAuthenticationEndpointServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
 
-		// Use this Authentication Code to retrieve the Access Token from SSO
+		// Use this Authentication Code to retrieve the Access Token from blueID/SSO
 		PrintWriter out = response.getWriter();
 		String tokenHttpRequResponse = null;
 		
@@ -72,18 +71,20 @@ public class BlueIDAuthenticationEndpointServlet extends HttpServlet {
 				// SF-TODO: Running always locally for now (local configuration file)
 				is_server_running_locally = true;
 			}		
-			// 2. running in Bluemix - get config from VCAP_SERVICEs
-			System.out.println(DEBUG_MSG_PREFIX+ "BlueIDAuthenticationEndpointServlet: Retrieving SSO service configuration from local config? " + is_server_running_locally);
+			// 2. running in Bluemix - get config from configuration file or VCAP_SERVICEs
+			System.out.println(DEBUG_MSG_PREFIX+ "BlueIDAuthenticationEndpointServlet: Retrieving Auth service configuration from local config? " + is_server_running_locally);
 			blueidSvcConfig.load(is_server_running_locally);
-			URL blueIdTokenEndpointUrl = new URL(blueidSvcConfig.getBlueidsvc_cred_authorizationEndpointUrl());
+			URL blueIdTokenEndpointUrl = new URL(blueidSvcConfig.getBlueidsvc_cred_tokenEndpointUrl());
 			String blueidClientId = blueidSvcConfig.getBlueidsvc_cred_clientId();
 			String blueidClientSecret = blueidSvcConfig.getBlueidsvc_cred_secret();
-			
+			String blueidRedirectUri = blueidSvcConfig.getBlueidsvc_redirectUri();
 			try {
 				StringBuilder tokenURL = new StringBuilder();			// retrieve the Access Token retrieval URL
 				tokenURL.append("grant_type=authorization_code&code=");
-				tokenURL.append(paramValues[0]);				
-				System.out.println(DEBUG_MSG_PREFIX+ "BlueIDAuthenticationEndpointServlet: Token URL " + tokenURL.toString());
+				tokenURL.append(paramValues[0]);
+				tokenURL.append("&redirect_uri="+blueidRedirectUri);    // redirect_uri is required for BlueID service!
+				
+				System.out.println(DEBUG_MSG_PREFIX+ "BlueIDAuthenticationEndpointServlet: Token URL = " + tokenURL.toString());
 				
 				// Create HTTP Request for Access Token retrieval:
 				tokenHttpRequResponse = HTTPRequestHelper.request("POST", 		// HTTP Method
@@ -93,18 +94,18 @@ public class BlueIDAuthenticationEndpointServlet extends HttpServlet {
 						blueidClientId,							// clientid
 						blueidClientSecret);					// secret
 			} catch (Exception e) {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-						e.getMessage());
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 				return;
 			}
-			String clearToken = "Received user info object from your Authentication Provider\n<br><br>" + BlueIDTokenProcessor.decodeToken(tokenHttpRequResponse);
-			System.out.println(clearToken);
+			System.out.println(DEBUG_MSG_PREFIX+ "BlueIDAuthenticationEndpointServlet: tokenHttpRequResponse = " + tokenHttpRequResponse);
+			String clearToken = "Received user info object from your Authentication Provider:\n\n" + BlueIDTokenProcessor.decodeToken(tokenHttpRequResponse);
+			System.out.println(DEBUG_MSG_PREFIX+ "BlueIDAuthenticationEndpointServlet: clearToken = " + clearToken);
 			out.write(clearToken);
 			
 		} else {
 			// Authentication Code not returned by SSO, Will not be able to login to SSO for Access Token retrieval!	
 			System.err.println(DEBUG_MSG_PREFIX+ "BlueIDAuthenticationEndpointServlet: Code received as param = " + paramValues.toString());
-			out.write(DEBUG_MSG_PREFIX+ "BlueIDAuthenticationEndpointServlet: No Authentication Code received in HTTP params from SSO!");
+			out.write(DEBUG_MSG_PREFIX+ "BlueIDAuthenticationEndpointServlet: No Authentication Code received in HTTP params from BlueID or SSO!");
 		}
 		out.close();
 	}

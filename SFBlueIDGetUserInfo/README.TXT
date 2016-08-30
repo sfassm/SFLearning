@@ -34,9 +34,8 @@ NOTE for execution:
 - indexlocal.jsp - use this when executed in local WAS profile (http://localhost:9080/SFBlueIDGetUserInfo/indexlocal.jsp)
 - indexbluemix.jsp - use this when executed in Bluemix (http://sfblueidgetuserinfo.mybluemix.net/ or http://sfblueidgetuserinfo.mybluemix.net/indexbluemix.jsp)
 - Configure Return-to-URL in IBMSSO or BlueID service to (see BlueIDAuthenticationEndpointServlet.java)
-http://sfblueidgetuserinfo.mybluemix.net:443/authfinal
-http://sfblueidgetuserinfo.mybluemix.net:443/BlueIDAuthenticationEndpointServlet
-
+https://sfblueidgetuserinfo.mybluemix.net:443/authfinal
+https://sfblueidgetuserinfo.mybluemix.net:443/BlueIDAuthenticationEndpointServlet
 
 
 ALTERNATIVE PATH for using OpenId Client in Liberty:

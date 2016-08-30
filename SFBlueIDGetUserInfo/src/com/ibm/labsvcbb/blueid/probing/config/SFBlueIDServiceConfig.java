@@ -10,15 +10,21 @@
  */
 package com.ibm.labsvcbb.blueid.probing.config;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SFBlueIDServiceConfig {
+	Properties lConnectionProps;
 	// IBM BlueID / IDaaS v2 Service config parameters:
 	// SF: SSO Service credentials in JSON format (as received from VCAP_SERVICES)
 		//	private static String blueidsvc_credentials = "{  \"secret\" : \"iOJIfIcIdH\"}"
@@ -36,6 +42,7 @@ public class SFBlueIDServiceConfig {
 	private static String blueidsvc_cred_issuerIdentifier = "sftestssosvc-xu7gl6565y-cn14.iam.ibmcloud.com";
 	private static String blueidsvc_cred_tokenEndpointUrl = "https://sftestssosvc-xu7gl6565y-cn14.iam.ibmcloud.com/idaas/oidc/endpoint/default/token";
 	private static String blueidsvc_cred_authorizationEndpointUrl = "https://sftestssosvc-xu7gl6565y-cn14.iam.ibmcloud.com/idaas/oidc/endpoint/default/authorize";
+	private static String blueidsvc_redirectUri = "https://SFBlueIDGetUserInfo.mybluemix.net/BlueIDAuthenticationEndpointServlet";
 	
 	private static Logger lLogger;
 
@@ -153,7 +160,18 @@ public class SFBlueIDServiceConfig {
 	 */
 	public static void setBlueidsvc_cred_authorizationEndpointUrl(String blueidsvc_cred_authorizationEndpointUrl) {
 		SFBlueIDServiceConfig.blueidsvc_cred_authorizationEndpointUrl = blueidsvc_cred_authorizationEndpointUrl; }
+	
+	/**
+	 * @return the getBlueidsvc_redirectUri
+	 */
+	public static String getBlueidsvc_redirectUri() {return blueidsvc_redirectUri;}
 
+	/**
+	 * @param setBlueidsvc_redirectUri the blueidsvc_redirectUri to set
+	 */
+	public static void setBlueidsvc_redirectUri(String blueidsvc_redirectUri) {
+		SFBlueIDServiceConfig.blueidsvc_redirectUri = blueidsvc_redirectUri; }
+	
 	/**
 	 * @return the config_file_name
 	 */
@@ -187,7 +205,7 @@ public class SFBlueIDServiceConfig {
 	 			// FileInputStream lFis = getServletContext().getResourceAsStream(config_file_name);
 	 			InputStream lFis = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");
 	 			if (lFis != null) {
-		 			Properties lConnectionProps = new Properties();
+		 			lConnectionProps = new Properties();
 		 			lConnectionProps.load(lFis);
 		 			lFis.close();
 		 			lLogger.info(DEBUG_PREFIX + "Using configuration file " + config_file_name);
@@ -216,6 +234,8 @@ public class SFBlueIDServiceConfig {
 		 					blueidsvc_cred_tokenEndpointUrl = lConnectionProps.getProperty("BlueIDServiceCredentials_tokenEndpointUrl").trim();
 		 			if ( lConnectionProps.getProperty("BlueIDServiceCredentials_authorizationEndpointUrl") != null) 
 		 					blueidsvc_cred_authorizationEndpointUrl = lConnectionProps.getProperty("BlueIDServiceCredentials_authorizationEndpointUrl").trim();
+		 			if ( lConnectionProps.getProperty("BlueIDServiceCredentials_redirectUri") != null) 
+		 				blueidsvc_redirectUri = lConnectionProps.getProperty("BlueIDServiceCredentials_redirectUri").trim();
 	
 		 			lLogger.info(DEBUG_PREFIX + "Using config for BlueID Service with name " + blueidsvc_name);
 	 			} else {
@@ -226,11 +246,44 @@ public class SFBlueIDServiceConfig {
 	 			lLogger.severe(DEBUG_PREFIX + "Configuration file = " + config_file_name + "  not found! Using default settings.");
 	 			e.printStackTrace();
 	 		} catch (IOException e) {
-	 			lLogger.severe("SF-DEBUG: Configuration file = " + config_file_name + "  not readable! Using default settings.");
+	 			lLogger.severe(DEBUG_PREFIX + "Configuration file = " + config_file_name + "  not readable! Using default settings.");
 	 			e.printStackTrace();
 	 		}
 	 	} else {
 	 		lLogger.info(DEBUG_PREFIX + "Configuration file = " + config_file_name + " not found! Using default settings.");
 	 	}
 	}		
+
+	/**
+	 * updateConfigurationFile - updates configuration/properties file new configuration values
+	 * SF: NOT WORKING !!!
+	 */
+	public void updateConfigurationFile() {
+		// update the properties object with the new configuration
+		lConnectionProps.setProperty("BlueIDServiceName", blueidsvc_name);
+		lConnectionProps.setProperty("BlueIDServiceLabel", blueidsvc_label);
+		lConnectionProps.setProperty("BlueIDServicePlan", blueidsvc_plan);
+		lConnectionProps.setProperty("BlueIDServiceCredentials_clientId", blueidsvc_cred_clientId);
+		lConnectionProps.setProperty("BlueIDServiceCredentials_secret", blueidsvc_cred_secret);
+		lConnectionProps.setProperty("BlueIDServiceCredentials_serverSupportedScope", blueidsvc_cred_serverSupportedScope);
+		lConnectionProps.setProperty("BlueIDServiceCredentials_issuerIdentifier", blueidsvc_cred_issuerIdentifier);
+		lConnectionProps.setProperty("BlueIDServiceCredentials_tokenEndpointUrl", blueidsvc_cred_tokenEndpointUrl);
+		lConnectionProps.setProperty("BlueIDServiceCredentials_authorizationEndpointUrl", blueidsvc_cred_authorizationEndpointUrl);
+		lConnectionProps.setProperty("BlueIDServiceCredentials_redirectUri", blueidsvc_redirectUri);
+		
+		// update configuration file with the new configuration:
+		
+		try {
+			OutputStream configFileOut = new FileOutputStream(config_file_name);
+	        lConnectionProps.store(configFileOut, "Updated by User request in BlueIDEnvConfigServlet");
+	        lLogger.severe(DEBUG_PREFIX + "Configuration was updated by user with new settings.");
+	        configFileOut.close();
+		} catch (FileNotFoundException e) {
+			lLogger.severe(DEBUG_PREFIX + "Configuration file = " + config_file_name + " for updating parameter values could not be found.");
+			e.printStackTrace();
+		} catch (IOException e) {
+			lLogger.severe(DEBUG_PREFIX + "Configuration file = " + config_file_name + " could not be stored with updated settings.");
+			e.printStackTrace();
+		} 
+	}
 }

@@ -55,7 +55,7 @@ public class BlueIDEnvConfigServlet extends HttpServlet {
 	/////// INTERNAL HELPERS ///////////
 	
 	/**
-	 * computeHttpResponseFromSFSSOConfig
+	 * computeHttpResponseFromSFBlueIDConfig
 	 * Method makes use of SFSSOServiceConfig class which allows retrieval of SSO config from Bluemix VCAP and local configuration
 	 * file (if application runs in local dev env).
 	 * 
@@ -71,16 +71,21 @@ public class BlueIDEnvConfigServlet extends HttpServlet {
 		String server_info = request.getServerName().toLowerCase();
 		
 // SF-TODO: Running locally only for now:
-//		if ( server_info.contains("localhost".toLowerCase()) || server_info.startsWith("192.168.") || server_info.startsWith("127.0.")  ) {
-//			is_server_running_locally = true;
-//		} else {
-//			is_server_running_locally = false;
-//		}
+		if ( server_info.contains("localhost".toLowerCase()) || server_info.startsWith("192.168.") || server_info.startsWith("127.0.")  ) {
+			is_server_running_locally = true;
+		} else {
+			is_server_running_locally = true;
+		}
+		
 		
 		// 2. running in Bluemix - get config from VCAP_SERVICEs
 		System.out.println(DEBUG_MSG_PREFIX+ "Retrieving BlueID service configuration from configuration file = " + is_server_running_locally);
 		blueIdSvcConfig.load(is_server_running_locally);
 		
+		// 3. Overwrite configuration if provided in POST request and not set to "default":
+		updateAuthServiceConfiguration(request);
+		
+		// 4. Display given configuration
 		Writer out = response.getWriter();
 		response.setStatus(HttpServletResponse.SC_OK);
 		response.setContentType("text/html");
@@ -104,6 +109,7 @@ public class BlueIDEnvConfigServlet extends HttpServlet {
 				+ ", issuerIdentifier = " + blueIdSvcConfig.getBlueidsvc_cred_issuerIdentifier()
 				+ ", tokenEndpointUrl = " + blueIdSvcConfig.getBlueidsvc_cred_tokenEndpointUrl()
 				+ ", authorizationEndpointUrl = " + blueIdSvcConfig.getBlueidsvc_cred_authorizationEndpointUrl()
+				+ ", redirectUri = " + blueIdSvcConfig.getBlueidsvc_redirectUri()
 						);
 			} else {
 				out.write("" 
@@ -148,5 +154,47 @@ public class BlueIDEnvConfigServlet extends HttpServlet {
 		out.flush();
 	}
 	
+	
+	/**
+	 * updateAuthServiceConfiguration - takes the configuration parameters provided by the POST request and updates the config.properties
+	 * with it
+	 */
+	void updateAuthServiceConfiguration(HttpServletRequest request) {
+		if ( (request.getParameter("postServiceLabel") != null) && !(request.getParameter("postServiceLabel").isEmpty()) 
+				&& !(request.getParameter("postServiceLabel").equalsIgnoreCase("default")) ) {
+			blueIdSvcConfig.setBlueidsvc_label(request.getParameter("postServiceLabel"));
+		}
+		if ( (request.getParameter("postClientId") != null) && !(request.getParameter("postClientId").isEmpty()) 
+				&& !(request.getParameter("postClientId").equalsIgnoreCase("default")) ) {
+			blueIdSvcConfig.setBlueidsvc_cred_clientId(request.getParameter("postClientId"));
+		}
+		if ( (request.getParameter("postClientSecret") != null) && !(request.getParameter("postClientSecret").isEmpty()) 
+				&& !(request.getParameter("postClientSecret").equalsIgnoreCase("default")) ) {
+			blueIdSvcConfig.setBlueidsvc_cred_secret(request.getParameter("postClientSecret"));
+		}
+		if ( (request.getParameter("postIssuer") != null) && !(request.getParameter("postIssuer").isEmpty()) 
+				&& !(request.getParameter("postIssuer").equalsIgnoreCase("default")) ) {
+			blueIdSvcConfig.setBlueidsvc_cred_issuerIdentifier(request.getParameter("postIssuer"));
+		}
+		if ( (request.getParameter("postIssuer") != null) && !(request.getParameter("postIssuer").isEmpty()) 
+				&& !(request.getParameter("postIssuer").equalsIgnoreCase("default")) ) {
+			blueIdSvcConfig.setBlueidsvc_cred_issuerIdentifier(request.getParameter("postIssuer"));
+		}
+		if ( (request.getParameter("postTokenEndpointUrl") != null) && !(request.getParameter("postTokenEndpointUrl").isEmpty()) 
+				&& !(request.getParameter("postTokenEndpointUrl").equalsIgnoreCase("default")) ) {
+			blueIdSvcConfig.setBlueidsvc_cred_tokenEndpointUrl(request.getParameter("postTokenEndpointUrl"));
+		}
+		if ( (request.getParameter("postAuthEndpointUrl") != null) && !(request.getParameter("postAuthEndpointUrl").isEmpty()) 
+				&& !(request.getParameter("postAuthEndpointUrl").equalsIgnoreCase("default")) ) {
+			blueIdSvcConfig.setBlueidsvc_cred_authorizationEndpointUrl(request.getParameter("postAuthEndpointUrl"));
+		}
+		if ( (request.getParameter("postAuthRedirectUri") != null) && !(request.getParameter("postAuthRedirectUri").isEmpty()) 
+				&& !(request.getParameter("postAuthRedirectUri").equalsIgnoreCase("default")) ) {
+			blueIdSvcConfig.setBlueidsvc_redirectUri(request.getParameter("postAuthRedirectUri"));
+		}
+		
+		// update configuration file with the new configuration:
+		blueIdSvcConfig.updateConfigurationFile();
+	}
 
 }

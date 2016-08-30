@@ -98,7 +98,7 @@ System.err.println("SF-DEBUG: PROBLEM - no Service with name = " + serviceName +
 			while (strTokens.hasMoreTokens()) {
 				String nextTokenKey = strTokens.nextToken();
 				retrievedVcapParamValue = svcStruct.get(nextTokenKey); // retrieved value for given key/token
-System.out.println("SF-DEBUG: Retrieved VCAP key/value = " + nextTokenKey + " / " + retrievedVcapParamValue);
+System.out.println("SF-DEBUG: Retrieved VCAP key/value = " + nextTokenKey + " = " + retrievedVcapParamValue);
 				if (strTokens.hasMoreTokens()) 
 					svcStruct = (JSONObject)retrievedVcapParamValue; // drill further down in object structure
 				else 

@@ -48,8 +48,7 @@ System.out.println(DEBUG_MSG_PREFIX + "HTTPRequestHelper: Sending request to URL
 			// Check if connection establishing was OK
 			int responseCode = connection.getResponseCode();
 			if (responseCode < 200 || responseCode >= 300) {
-				reader = new BufferedReader(new InputStreamReader(
-						connection.getErrorStream()));
+				reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
 				String line;
 				StringBuilder bodyBuilder = new StringBuilder();
 				while ((line = reader.readLine()) != null)
@@ -59,8 +58,7 @@ System.out.println(DEBUG_MSG_PREFIX + "HTTPRequestHelper: Sending request to URL
 //						+ " details: " + bodyBuilder.toString());
 				System.err.println(DEBUG_MSG_PREFIX + "HTTPRequestHelper: Received request failure with code="+ responseCode);
 			} else {
-				reader = new BufferedReader(new InputStreamReader(
-						connection.getInputStream()));
+				reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 				System.out.println(DEBUG_MSG_PREFIX + "HTTPRequestHelper: Request code = OK received.");
 			}		
 			

@@ -85,15 +85,18 @@ System.out.println(DEBUG_MSG_PREFIX+ "BlueIDLoginServlet: Execution runs locally
 			blueidAuthorizationEndpointUrl = new URL(endpointUrl);
 			String blueidClientId = blueIDSvcConfig.getBlueidsvc_cred_clientId();
 			String serverSupportedScope = blueIDSvcConfig.getBlueidsvc_cred_serverSupportedScope();
-System.out.println(DEBUG_MSG_PREFIX+ "BlueIDLoginServlet, using VCAP Infos: " + blueidClientId +", "+serverSupportedScope+", "+blueidAuthorizationEndpointUrl);		
+			String redirectUri = blueIDSvcConfig.getBlueidsvc_redirectUri();
+System.out.println(DEBUG_MSG_PREFIX+ "BlueIDLoginServlet, using config / VCAP Infos: " + blueidClientId +", "+serverSupportedScope+", "+blueidAuthorizationEndpointUrl+", "+redirectUri);		
 				
 			if ( (blueidAuthorizationEndpointUrl != null) && (blueidAuthorizationEndpointUrl instanceof URL) && (blueidClientId != null) ) {
 				// Redirect to BlueID Login URL built from URL param: 
 				// OLD BMSSO instances:  <authorizationEndpointUrl>?response_type=code&&scope=<serverSupportedScope>&client_id=<clientId>
 				// NEW BMSSO instances:  <authorizationEndpointUrl>?response_type=code&scope=<serverSupportedScope>&client_id=<clientId>
+				// BlueID service: <authorizationEndpointUrl>?response_type=code&scope=<serverSupportedScope>&client_id=<clientId>&redirect_uri=<rediret_uri>
+				//    e.g. redirect_uri = https://SFBlueIDGetUserInfo.mybluemix.net/BlueIDAuthenticationEndpointServlet OR https%3a%2f%2fSFBlueIDGetUserInfo.mybluemix.net%2fBlueIDAuthenticationEndpointServlet 
 				String authorizationEndpointUrl = blueidAuthorizationEndpointUrl  
 						+ "?response_type=code&scope=" + serverSupportedScope
-						+ "&client_id=" + blueidClientId;
+						+ "&client_id=" + blueidClientId + "&redirect_uri=" + redirectUri;
 System.out.println(DEBUG_MSG_PREFIX+ "BlueIDLoginServlet: Redirecting to "+authorizationEndpointUrl);
 
 				response.sendRedirect(authorizationEndpointUrl);

@@ -78,11 +78,12 @@ public class SFSSOAuthenticationEndpointServlet extends HttpServlet {
 			String ssoClientId = ssoSvcConfig.getSsosvc_cred_clientId();
 			String ssoClientSecret = ssoSvcConfig.getSsosvc_cred_secret();
 			
+			
 			try {
 				StringBuilder tokenURL = new StringBuilder();			// retrieve the Access Token retrieval URL
 				tokenURL.append("grant_type=authorization_code&code=");
 				tokenURL.append(paramValues[0]);				
-				System.out.println(DEBUG_MSG_PREFIX+ "SFSSOAuthEndpointServlet: Token URL " + tokenURL.toString());
+				System.out.println(DEBUG_MSG_PREFIX+ "SFSSOAuthEndpointServlet: Token URL = " + tokenURL.toString());
 				
 				// Create HTTP Request for Access Token retrieval:
 				tokenHttpRequResponse = HTTPRequestHelper.request("POST", 		// HTTP Method
@@ -96,8 +97,9 @@ public class SFSSOAuthenticationEndpointServlet extends HttpServlet {
 						e.getMessage());
 				return;
 			}
-			String clearToken = "Received user info object from your Authentication Provider\n<br><br>" + SFSSOTokenProcessor.decodeToken(tokenHttpRequResponse);
-			System.out.println(clearToken);
+			System.out.println(DEBUG_MSG_PREFIX+ "SFSSOAuthEndpointServlet: tokenHttpRequResponse = " + tokenHttpRequResponse);
+			String clearToken = "Received user info object from your Authentication Provider:\n\n" + SFSSOTokenProcessor.decodeToken(tokenHttpRequResponse);
+			System.out.println(DEBUG_MSG_PREFIX+ "SFSSOAuthEndpointServlet: clearToken = " + clearToken);
 			out.write(clearToken);
 			
 		} else {

@@ -25,6 +25,15 @@ public class SFBlueIDAccessConfigTest {
 		System.out.println(debugMsgPrefix + "TESTing SFBlueIDServiceConfig using local configuration file:");
 		use_local_config = true;
 		blueidConfig.load(use_local_config);
+		printOutConfig();
+		
+		// SF-NOT WORKING yet
+		System.out.println(debugMsgPrefix + "Changing and storing SFBlueIDServiceConfig using local configuration file:");
+		blueidConfig.setBlueidsvc_cred_clientId("newClientID");
+		blueidConfig.setBlueidsvc_cred_secret("newSecret");
+		blueidConfig.updateConfigurationFile();	
+		blueidConfig.load(use_local_config);
+		printOutConfig();
 	}
 
 	private static void printOutConfig() {
@@ -39,7 +48,8 @@ public class SFBlueIDAccessConfigTest {
 			+ ", serverSupportedScope = " + blueidConfig.getBlueidsvc_cred_serverSupportedScope()
 			+ ", issuerIdentifier = " + blueidConfig.getBlueidsvc_cred_issuerIdentifier()
 			+ ", tokenEndpointUrl = " + blueidConfig.getBlueidsvc_cred_tokenEndpointUrl()
-			+ ", authorizationEndpointUrl = " + blueidConfig.getBlueidsvc_cred_authorizationEndpointUrl() );
+			+ ", authorizationEndpointUrl = " + blueidConfig.getBlueidsvc_cred_authorizationEndpointUrl()
+			+ ", redirectUri = " + blueidConfig.getBlueidsvc_redirectUri());
 	}
 	
 }
