@@ -188,10 +188,6 @@ public class BlueIDEnvConfigServlet extends HttpServlet {
 				&& !(request.getParameter("postIssuer").equalsIgnoreCase("default")) ) {
 			blueIdSvcConfig.setBlueidsvc_cred_issuerIdentifier(request.getParameter("postIssuer"));
 		}
-		if ( (request.getParameter("postIssuer") != null) && !(request.getParameter("postIssuer").isEmpty()) 
-				&& !(request.getParameter("postIssuer").equalsIgnoreCase("default")) ) {
-			blueIdSvcConfig.setBlueidsvc_cred_issuerIdentifier(request.getParameter("postIssuer"));
-		}
 		if ( (request.getParameter("postTokenEndpointUrl") != null) && !(request.getParameter("postTokenEndpointUrl").isEmpty()) 
 				&& !(request.getParameter("postTokenEndpointUrl").equalsIgnoreCase("default")) ) {
 			blueIdSvcConfig.setBlueidsvc_cred_tokenEndpointUrl(request.getParameter("postTokenEndpointUrl"));
