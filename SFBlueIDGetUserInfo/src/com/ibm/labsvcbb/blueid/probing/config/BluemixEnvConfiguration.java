@@ -14,9 +14,6 @@ import com.ibm.json.java.JSONObject;
  * VCAP_SERVICE and application parameters in VCAP_APPLICATION
  * 
  * @author stefan
- * 
- * last edited: 20160830
- *
  */
 public class BluemixEnvConfiguration {
 
