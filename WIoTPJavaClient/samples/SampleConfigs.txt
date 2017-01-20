@@ -1,0 +1,13 @@
+ Managed list of Application and Device Client Samples
+-------------------------------------------------------
+
+1) Prod Org US-SOUTH: https://r344n3.internetofthings.ibmcloud.com/dashboard/#/boards/
+a. TYPES
+  Device Type: SFJavaClientTestDevice
+  GW Type: SFJavaClientTestGateway
+b. DEVICES
+  - ClientID: SFJavClntDevice001 , Pwd: f1rstCl13nt
+  - ClientID: SFJavClntDevice002 , Pwd: s3c0ndCl13nt
+c. GATEWAYS
+  - ClientID: SFJavaGW001 , Pwd: f1rstGat3way
+  - ClientID: SFJavaGW002 , Pwd: s3c0ndGat3way
