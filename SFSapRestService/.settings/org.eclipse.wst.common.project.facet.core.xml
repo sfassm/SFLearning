@@ -2,6 +2,7 @@
 <faceted-project>
   <runtime name="Java EE 6 Web Profile"/>
   <secondary-runtime name="SAP Java Web Server"/>
+  <secondary-runtime name="Java Web Tomcat 8"/>
   <fixed facet="wst.jsdt.web"/>
   <fixed facet="java"/>
   <fixed facet="jst.web"/>
