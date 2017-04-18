@@ -1,3 +1,4 @@
+package de.amobico.example.java;
 import java.io.IOException;
 
 /**
